@@ -1,0 +1,26 @@
+{
+  "type": "bundle",
+  "id": "bundle--case-205",
+  "objects": [
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--c735fdcac0a9744a7e897375efc5ab63",
+      "name": "Suspicious Sender Domain: security-alert-center-update.com>",
+      "pattern": "[domain-name:value = 'security-alert-center-update.com>']",
+      "pattern_type": "stix",
+      "valid_from": "2026-09-11T09:04:51.628125+00:00",
+      "confidence": 94
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--3be6af33bbf9862ea6eb69f957622171",
+      "name": "Phishing URL: bit.ly",
+      "pattern": "[url:value = 'https://bit.ly/m365-sso-verify-portal']",
+      "pattern_type": "stix",
+      "valid_from": "2026-09-11T09:04:51.628171+00:00",
+      "confidence": 98
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+Return-Path: <accounts@vitap-payment.example>
+Received: from mail.vitap-payment.example (198.51.100.44)
+    by mx.corporate-enterprise.example with ESMTP id TRACE-GEO-AMR-222;
+    Thu, 10 Sep 2026 14:20:18 +0000
+Authentication-Results: mx.corporate-enterprise.example;
+    spf=fail smtp.mailfrom=vitap-payment.example;
+    dkim=fail header.d=vitap-payment.example;
+    dmarc=fail header.from=vitap.ac.in
+From: "VIT-AP Accounts Department" <accounts@vitap.ac.in>
+To: finance@corporate-enterprise.example
+Reply-To: payment-desk@vitap-payment.example
+Subject: URGENT: VIT-AP Vendor Payment — Invoice INV-AMR-222
+Date: Thu, 10 Sep 2026 14:20:12 +0000
+Message-ID: <TRACE-X-GEO-AMARAVATI-222@vitap.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+TRACE-X DEMONSTRATION — GEO-FINANCIAL FORENSIC TEST CASE
+
+FINANCIAL BENEFICIARY
+VIT-AP University
+
+BANK NAME
+VIT-AP Bank
+
+BRANCH
+Amaravati Main Branch
+
+IFSC
+VITP0000001
+
+ACCOUNT NUMBER
+XXXX-XXXX-2222
+
+REQUESTED PAYOUT
+INR 4,85,000
+
+FINANCIAL DESTINATION
+Amaravati, Andhra Pradesh, India
+
+CITY
+Amaravati
+
+STATE
+Andhra Pradesh
+
+COUNTRY
+India
+
+CASE PURPOSE
+TRACE-X SIH demonstration of financial entity extraction and
+geo-financial location mapping.
+
+IMPORTANT DEMONSTRATION NOTE:
+"VIT-AP Bank" is a fictional bank name created specifically for
+this TRACE-X demonstration. It is NOT an actual banking institution
+or real payment destination.
+
+All financial values in this email are synthetic training data.
+No real payment should be made.
+
+FORENSIC TEST CUES:
+- beneficiary extraction
+- bank-name extraction
+- IFSC extraction
+- branch extraction
+- Amaravati, Andhra Pradesh location extraction
+- payout amount extraction
+- sender/reply-to mismatch
+- SPF/DKIM/DMARC failure
+
+GEO-FINANCIAL CLUE:
+The financial destination for this synthetic case is explicitly
+Amaravati, Andhra Pradesh, India.
+
+A financial branch location is a payout-routing clue and does NOT
+establish the physical location of a perpetrator.

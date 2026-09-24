@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--case-213",
+  "objects": [
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--43b12db8a403db581df9034344af6f34",
+      "name": "Suspicious Sender Domain: unknown.com",
+      "pattern": "[domain-name:value = 'unknown.com']",
+      "pattern_type": "stix",
+      "valid_from": "2026-09-10T13:03:42.154620+00:00",
+      "confidence": 15
+    }
+  ]
+}

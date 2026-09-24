@@ -1,0 +1,101 @@
+Return-Path: <security-alerts@micr0soft-account-security.com>
+Received: from mail.suspicious-relay.net ([185.220.101.45])
+	by mx.company-domain.com with ESMTP id A8B72C3E4F5
+	for <victim@company-domain.com>; Mon, 10 Sep 2026 14:25:33 +0000
+Received: from [192.168.1.15] (unknown [194.26.29.112])
+	by mail.suspicious-relay.net (Postfix) with ESMTPSA id 9B4E2A1B3C
+	for <victim@company-domain.com>; Mon, 10 Sep 2026 14:25:30 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=micr0soft-account-security.com;
+	s=default; t=1725976530;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	h=From:To:Subject:Date;
+	b=InvalidSignatureHere
+From: "Microsoft Security Team" <security-alerts@micr0soft-account-security.com>
+Reply-To: payments-confirm@cybercash-processor.xyz
+To: victim@company-domain.com
+Subject: URGENT: Security Alert - Verify Your Account Immediately
+Date: Mon, 10 Sep 2026 14:25:30 +0000
+Message-ID: <8f7e6d5c4b3a2@micr0soft-account-security.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="----=_Part_1234567_890123456.1725976530000"
+Authentication-Results: mx.company-domain.com;
+	spf=fail smtp.mailfrom=micr0soft-account-security.com;
+	dkim=fail (bad signature) header.d=micr0soft-account-security.com;
+	dmarc=fail (p=quarantine dis=none) header.from=micr0soft-account-security.com
+Received-SPF: fail (mx.company-domain.com: domain of micr0soft-account-security.com does not designate 185.220.101.45 as permitted sender)
+
+------=_Part_1234567_890123456.1725976530000
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+URGENT SECURITY ALERT
+
+Dear Valued Customer,
+
+We have detected unusual activity on your Microsoft account from an unrecognized location (Sofia, Bulgaria). Your account security may be compromised.
+
+To prevent unauthorized access and secure your account, please verify your identity immediately by clicking the link below:
+
+https://bit.ly/ms-verify-urgent
+
+VERIFY YOUR ACCOUNT NOW: https://micr0soft-login-check.net/auth/verify?session=a8f3b9d2c1e4
+
+If you do not verify within 24 hours, your account will be temporarily suspended for security purposes.
+
+URGENT PAYMENT AUTHORIZATION REQUIRED:
+
+We also need to process a pending vendor payment authorization:
+
+Beneficiary: Global Tech Solutions Pvt Ltd
+Bank Name: State Bank of India
+IFSC Code: SBIN0000847
+Account Number: XXXX-XXXX-9842
+Amount: ₹ 4,85,000 INR
+Invoice Reference: INV-2026-08947
+
+Please authorize this payment by replying to this email or contact our finance verification team at payments-confirm@cybercash-processor.xyz
+
+This is an automated security message from Microsoft Security Operations.
+
+Best regards,
+Microsoft Security Team
+security-alerts@micr0soft-account-security.com
+
+------=_Part_1234567_890123456.1725976530000
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<body style="font-family: Arial, sans-serif;">
+<div style="background-color: #d32f2f; color: white; padding: 20px; text-align: center;">
+<h1>🚨 URGENT SECURITY ALERT 🚨</h1>
+</div>
+<div style="padding: 20px;">
+<p>Dear Valued Customer,</p>
+<p>We have detected <strong>unusual activity</strong> on your Microsoft account from an unrecognized location (<strong>Sofia, Bulgaria</strong>). Your account security may be compromised.</p>
+<p>To prevent unauthorized access and secure your account, please verify your identity immediately:</p>
+<p style="text-align: center;">
+<a href="https://micr0soft-login-check.net/auth/verify?session=a8f3b9d2c1e4" style="background-color: #0078d4; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">VERIFY YOUR ACCOUNT NOW</a>
+</p>
+<p><strong>Shortened Link:</strong> <a href="https://bit.ly/ms-verify-urgent">https://bit.ly/ms-verify-urgent</a></p>
+<p style="color: red;">⚠️ If you do not verify within 24 hours, your account will be temporarily suspended for security purposes.</p>
+<hr>
+<h3>URGENT PAYMENT AUTHORIZATION REQUIRED:</h3>
+<table style="border: 1px solid #ccc; padding: 10px;">
+<tr><td><strong>Beneficiary:</strong></td><td>Global Tech Solutions Pvt Ltd</td></tr>
+<tr><td><strong>Bank Name:</strong></td><td>State Bank of India</td></tr>
+<tr><td><strong>IFSC Code:</strong></td><td>SBIN0000847</td></tr>
+<tr><td><strong>Account Number:</strong></td><td>XXXX-XXXX-9842</td></tr>
+<tr><td><strong>Amount:</strong></td><td>₹ 4,85,000 INR</td></tr>
+<tr><td><strong>Invoice Reference:</strong></td><td>INV-2026-08947</td></tr>
+</table>
+<p>Please authorize this payment by replying to this email or contact our finance verification team at <a href="mailto:payments-confirm@cybercash-processor.xyz">payments-confirm@cybercash-processor.xyz</a></p>
+</div>
+<div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+<p>This is an automated security message from Microsoft Security Operations.</p>
+<p>Microsoft Corporation | One Microsoft Way | Redmond, WA 98052</p>
+</div>
+</body>
+</html>
+
+------=_Part_1234567_890123456.1725976530000--
