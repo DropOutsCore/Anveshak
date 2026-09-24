@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, Download, CheckCircle2, History, Hash, Copy, Check, Blocks, ExternalLink } from 'lucide-react';
 import { CaseDetail } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 const CopyHash: React.FC<{ value: string; label: string; color?: string }> = ({ value, label, color = 'var(--cyan)' }) => {
   const [copied, setCopied] = useState(false);
@@ -40,7 +41,7 @@ export const EvidenceVaultView: React.FC<EvidenceVaultViewProps> = ({ caseDetail
   const events = caseDetail.chain_of_custody;
 
   const downloadStix = async () => {
-    const res  = await fetch(`http://127.0.0.1:8000/api/v1/cases/${caseDetail.case_id}/stix`);
+    const res  = await fetch(`${API_BASE_URL}/api/v1/cases/${caseDetail.case_id}/stix`);
     const data = await res.json();
     const url  = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type:'application/json' }));
     Object.assign(document.createElement('a'), { href:url, download:`STIX_Bundle_${caseDetail.case_id}.json` }).click();

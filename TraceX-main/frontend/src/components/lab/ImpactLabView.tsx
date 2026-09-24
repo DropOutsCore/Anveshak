@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sliders, ArrowRight, AlertCircle } from 'lucide-react';
 import { CaseDetail } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 interface ImpactLabViewProps { caseDetail: CaseDetail; }
 
@@ -16,7 +17,7 @@ export const ImpactLabView: React.FC<ImpactLabViewProps> = ({ caseDetail }) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/v1/cases/${caseDetail.case_id}/impact-lab?remove_url=${removeUrl}&assume_spf_pass=${assumeSpfPass}&disconnect_campaign=${disconnectCampaign}&remove_reply_mismatch=${removeReplyMismatch}`,
+        `${API_BASE_URL}/api/v1/cases/${caseDetail.case_id}/impact-lab?remove_url=${removeUrl}&assume_spf_pass=${assumeSpfPass}&disconnect_campaign=${disconnectCampaign}&remove_reply_mismatch=${removeReplyMismatch}`,
         { method: 'POST' }
       );
       setSimulatedResult(await res.json());

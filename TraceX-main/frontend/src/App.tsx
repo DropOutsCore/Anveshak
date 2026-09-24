@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from './config';
 import { Download, Globe2 } from 'lucide-react';
 import { downloadForensicPdf, ReportLanguage } from './utils/pdfExport';
 import { ModernNavbar } from './components/layout/ModernNavbar';
@@ -89,15 +90,15 @@ export const App: React.FC = () => {
 
   const fetchCases = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/cases');
+      const res = await fetch(`${API_BASE_URL}/api/v1/cases`);
       const summaries = await res.json();
       if (summaries.length > 0) {
-        const fullRes = await fetch(`http://127.0.0.1:8000/api/v1/cases/${summaries[0].case_id}`);
+        const fullRes = await fetch(`${API_BASE_URL}/api/v1/cases/${summaries[0].case_id}`);
         const fullDetail = await fullRes.json();
         setCases([fullDetail]);
         setActiveCase(fullDetail);
         const all = await Promise.all(summaries.map((s: any) =>
-          fetch(`http://127.0.0.1:8000/api/v1/cases/${s.case_id}`).then(r => r.json())
+          fetch(`${API_BASE_URL}/api/v1/cases/${s.case_id}`).then(r => r.json())
         ));
         setCases(all);
       }
@@ -134,7 +135,7 @@ export const App: React.FC = () => {
       const fd = new FormData();
       if (file) fd.append('file', file);
       if (rawText) fd.append('raw_text', rawText);
-      const res = await fetch('http://127.0.0.1:8000/api/v1/cases/ingest', { method: 'POST', body: fd });
+      const res = await fetch(`${API_BASE_URL}/api/v1/cases/ingest`, { method: 'POST', body: fd });
       if (!res.ok) { alert(`Upload failed: ${await res.text()}`); return; }
       const newCase = await res.json();
       setCases(p => [newCase, ...p]);

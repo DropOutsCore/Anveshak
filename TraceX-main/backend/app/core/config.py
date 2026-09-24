@@ -22,7 +22,7 @@ class Settings:
         except Exception:
             ALLOWED_ORIGINS: list[str] = [allowed_origins_env]
     else:
-        ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
+        ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "https://anveshak.vercel.app"]
 
     # External Provider Keys (exclusively server-side)
     VIRUSTOTAL_API_KEY: str = os.getenv("VIRUSTOTAL_API_KEY", "")

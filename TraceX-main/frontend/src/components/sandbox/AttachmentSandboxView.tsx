@@ -6,6 +6,7 @@ import {
   Crosshair, Layers, Radio, RefreshCw
 } from 'lucide-react';
 import { CaseDetail, AttachmentItem } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 interface AttachmentSandboxViewProps {
   caseDetail: CaseDetail;
@@ -330,7 +331,7 @@ const SandboxCard: React.FC<{ att: AttachmentItem; caseId: string; idx: number }
   const fetchDetonation = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/v1/cases/${caseId}/sandbox/${att.attachment_id}/detonate`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/v1/cases/${caseId}/sandbox/${att.attachment_id}/detonate`, { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setD(await res.json());
     } catch (e: any) {

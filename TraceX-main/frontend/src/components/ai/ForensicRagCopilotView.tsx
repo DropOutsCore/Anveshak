@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Mic, MicOff, Sparkles } from 'lucide-react';
 import { CaseDetail } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 interface ForensicRagCopilotViewProps { caseDetail: CaseDetail; voiceActive: boolean; }
 interface Message { sender: 'USER' | 'AI'; text: string; evidence_references?: string[]; }
@@ -31,7 +32,7 @@ export const ForensicRagCopilotView: React.FC<ForensicRagCopilotViewProps> = ({ 
     if (!q) setInput('');
     setLoading(true);
     try {
-      const res  = await fetch(`http://127.0.0.1:8000/api/v1/cases/${caseDetail.case_id}/rag`, {
+      const res  = await fetch(`${API_BASE_URL}/api/v1/cases/${caseDetail.case_id}/rag`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: text }),
