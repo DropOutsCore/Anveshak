@@ -1,124 +1,233 @@
-import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { MapPin, AlertTriangle, Building2 } from 'lucide-react';
 import { CaseDetail } from '../../types';
 
-const bankIcon = L.divIcon({
-  className: '',
-  html: `<div style="width:14px;height:14px;border-radius:50%;background:var(--green,#34d399);border:2px solid #fff;box-shadow:0 0 12px rgba(52,211,153,0.7)"></div>`,
-  iconSize: [14, 14],
-});
+/* ─────────────────────────────────────────────────────────────────────────────
+   Holographic 3D Globe  –  powered by globe.gl + Three.js
+   ───────────────────────────────────────────────────────────────────────────── */
 
-const ipIcon = L.divIcon({
-  className: '',
-  html: `<div style="width:14px;height:14px;border-radius:50%;background:var(--red,#f87171);border:2px solid #fff;box-shadow:0 0 12px rgba(248,113,113,0.7)"></div>`,
-  iconSize: [14, 14],
-});
-
-/* ── Animated beam overlay ───────────────────────────────────── */
-interface BeamOverlayProps {
-  from: [number, number]; // [lat, lng] sender (red)
-  to:   [number, number]; // [lat, lng] receiver (green)
+interface GlobePoint {
+  lat: number;
+  lng: number;
+  label: string;
+  color: string;
+  size: number;
 }
 
-const BeamOverlay: React.FC<BeamOverlayProps> = ({ from, to }) => {
-  const map = useMap();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef   = useRef<number>(0);
-  const dashOffsetRef = useRef<number>(0);
+interface GlobeArc {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: string;
+}
+
+/* ── 3D Globe wrapper ────────────────────────────────────────────────────── */
+const HolographicGlobe: React.FC<{
+  points: GlobePoint[];
+  arcs: GlobeArc[];
+  focusLat: number;
+  focusLng: number;
+}> = ({ points, arcs, focusLat, focusLng }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const globeRef = useRef<any>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!containerRef.current) return;
 
-    // Size canvas to map container
-    const container = map.getContainer();
-    const resize = () => {
-      canvas.width  = container.clientWidth;
-      canvas.height = container.clientHeight;
+    let globe: any = null;
+    let disposed = false;
+
+    const initGlobe = async () => {
+      const GlobeModule = await import('globe.gl');
+      const Globe = GlobeModule.default;
+
+      if (disposed || !containerRef.current) return;
+
+      // Clear any previous globe
+      containerRef.current.innerHTML = '';
+
+      globe = Globe()(containerRef.current)
+        .backgroundColor('rgba(0,0,0,0)')
+        .showAtmosphere(true)
+        .atmosphereColor('#06b6d4')
+        .atmosphereAltitude(0.18)
+        .globeImageUrl('')
+        .showGlobe(true)
+        .pointOfView({ lat: focusLat, lng: focusLng, altitude: 2.2 }, 0)
+        // ── Globe material: dark translucent sphere ──
+        .globeMaterial((() => {
+          const THREE = (window as any).__THREE_IMPORT__;
+          if (THREE) {
+            return new THREE.MeshPhongMaterial({
+              color: '#050a14',
+              transparent: true,
+              opacity: 0.85,
+              shininess: 25,
+            });
+          }
+          return undefined;
+        })())
+        // ── Hex polygons (country outlines) ──
+        .hexPolygonResolution(3)
+        .hexPolygonMargin(0.62)
+        .hexPolygonColor(() => 'rgba(6, 182, 212, 0.12)')
+        // ── Points (markers) ──
+        .pointsData(points)
+        .pointLat('lat')
+        .pointLng('lng')
+        .pointColor('color')
+        .pointAltitude(0.015)
+        .pointRadius('size')
+        .pointLabel('label')
+        // ── Arcs (animated beams) ──
+        .arcsData(arcs)
+        .arcStartLat('startLat')
+        .arcStartLng('startLng')
+        .arcEndLat('endLat')
+        .arcEndLng('endLng')
+        .arcColor('color')
+        .arcDashLength(0.4)
+        .arcDashGap(0.15)
+        .arcDashAnimateTime(2200)
+        .arcStroke(0.6)
+        .arcAltitudeAutoScale(0.4)
+        // ── Auto-rotate ──
+        .enablePointerInteraction(true);
+
+      // Load country polygons for hex grid
+      try {
+        const res = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json');
+        const worldData = await res.json();
+        const topojson = await import('https://cdn.jsdelivr.net/npm/topojson-client@3/+esm' as any);
+        const countries = topojson.feature(worldData, worldData.objects.countries);
+        if (!disposed && globe) {
+          globe.hexPolygonsData(countries.features);
+        }
+      } catch {
+        // Hex polygons are optional; globe still works without them
+      }
+
+      // Configure controls
+      const controls = globe.controls();
+      if (controls) {
+        controls.enableZoom = true;
+        controls.zoomSpeed = 0.8;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.4;
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.1;
+        controls.minDistance = 120;
+        controls.maxDistance = 600;
+      }
+
+      // Size globe to container
+      const resize = () => {
+        if (containerRef.current && globe) {
+          globe.width(containerRef.current.clientWidth);
+          globe.height(containerRef.current.clientHeight);
+        }
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      // Modify the renderer for glow
+      const renderer = globe.renderer();
+      if (renderer) {
+        renderer.setClearColor(0x000000, 0);
+      }
+
+      // Add ambient + directional lights for holographic feel
+      const scene = globe.scene();
+      if (scene) {
+        const THREE_LIB = await import('three');
+        // Dim ambient
+        const ambient = new THREE_LIB.AmbientLight(0x06b6d4, 0.3);
+        scene.add(ambient);
+        // Directional from upper-right
+        const dir = new THREE_LIB.DirectionalLight(0x06b6d4, 0.5);
+        dir.position.set(5, 3, 5);
+        scene.add(dir);
+        // Subtle point light for neon glow
+        const point = new THREE_LIB.PointLight(0xa855f7, 0.4, 500);
+        point.position.set(-3, 2, 4);
+        scene.add(point);
+
+        // Make globe material more holographic
+        const globeMesh = scene.children.find((c: any) => c.type === 'Mesh' && c.geometry?.type === 'SphereGeometry');
+        if (globeMesh && (globeMesh as any).material) {
+          (globeMesh as any).material.color.setHex(0x050a14);
+          (globeMesh as any).material.transparent = true;
+          (globeMesh as any).material.opacity = 0.88;
+          (globeMesh as any).material.emissive = new THREE_LIB.Color(0x06b6d4);
+          (globeMesh as any).material.emissiveIntensity = 0.03;
+        }
+      }
+
+      globeRef.current = globe;
+
+      // Smooth fly-in
+      setTimeout(() => {
+        if (!disposed && globe) {
+          globe.pointOfView({ lat: focusLat, lng: focusLng, altitude: 1.8 }, 1500);
+        }
+      }, 500);
+
+      return () => {
+        window.removeEventListener('resize', resize);
+      };
     };
-    resize();
-    map.on('resize move zoom viewreset zoomend moveend', resize);
 
-    const ctx = canvas.getContext('2d')!;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Convert lat/lng to pixel positions relative to map container
-      const pFrom = map.latLngToContainerPoint(L.latLng(from[0], from[1]));
-      const pTo   = map.latLngToContainerPoint(L.latLng(to[0],   to[1]));
-
-      const x1 = pFrom.x, y1 = pFrom.y;
-      const x2 = pTo.x,   y2 = pTo.y;
-
-      // Arc control point — bow upward for globe feel
-      const mx  = (x1 + x2) / 2;
-      const my  = (y1 + y2) / 2 - Math.abs(x2 - x1) * 0.35;
-
-      // ── Single glowing dotted line ──
-      dashOffsetRef.current = (dashOffsetRef.current - 0.4) % 20;
-
-      // Outer glow (soft)
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.quadraticCurveTo(mx, my, x2, y2);
-      ctx.strokeStyle = 'rgba(0, 86, 166, 0.25)';
-      ctx.lineWidth   = 8;
-      ctx.lineCap     = 'round';
-      ctx.setLineDash([2, 10]);
-      ctx.lineDashOffset = dashOffsetRef.current;
-      ctx.shadowBlur    = 12;
-      ctx.shadowColor   = 'rgba(0, 86, 166, 0.6)';
-      ctx.stroke();
-
-      // Inner bright dotted line
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.quadraticCurveTo(mx, my, x2, y2);
-      ctx.strokeStyle = '#0056A6';
-      ctx.lineWidth   = 3;
-      ctx.setLineDash([2, 10]);
-      ctx.lineDashOffset = dashOffsetRef.current;
-      ctx.shadowBlur    = 8;
-      ctx.shadowColor   = '#0056A6';
-      ctx.stroke();
-
-      // Reset context state
-      ctx.setLineDash([]);
-      ctx.shadowBlur = 0;
-
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    animRef.current = requestAnimationFrame(draw);
+    initGlobe();
 
     return () => {
-      cancelAnimationFrame(animRef.current);
-      map.off('resize move zoom viewreset zoomend moveend', resize);
+      disposed = true;
+      if (globeRef.current) {
+        const el = containerRef.current;
+        if (el) el.innerHTML = '';
+        globeRef.current = null;
+      }
     };
-  }, [map, from, to]);
+  }, [points, arcs, focusLat, focusLng]);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={containerRef}
       style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        zIndex: 500,
-        pointerEvents: 'none',
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.04) 0%, rgba(5,10,20,0.98) 70%)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        cursor: 'grab',
       }}
     />
   );
 };
 
+/* ── Main View ─────────────────────────────────────────────────────────────── */
 interface GeoFinancialMapViewProps { caseDetail: CaseDetail; }
 
 export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDetail }) => {
   const geo = caseDetail.geo_financial;
+
+  const points: GlobePoint[] = geo ? [
+    { lat: geo.lat, lng: geo.lng, label: `🏦 ${geo.bank_name} · ${geo.branch_name}`, color: '#34d399', size: 0.55 },
+    { lat: geo.ip_lat, lng: geo.ip_lng, label: `🔴 Server IP · ${geo.ip_geolocation}`, color: '#f87171', size: 0.55 },
+  ] : [];
+
+  const arcs: GlobeArc[] = geo ? [
+    {
+      startLat: geo.ip_lat,
+      startLng: geo.ip_lng,
+      endLat: geo.lat,
+      endLng: geo.lng,
+      color: '#06b6d4',
+    },
+  ] : [];
+
+  const focusLat = geo ? (geo.lat + geo.ip_lat) / 2 : 20;
+  const focusLng = geo ? (geo.lng + geo.ip_lng) / 2 : 60;
 
   return (
     <div className="page space-y-7 anim-fade-up">
@@ -167,45 +276,72 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {/* ── Map (left 2/3) ── */}
+            {/* ── 3D Globe (left 2/3) ── */}
             <div
-              className="lg:col-span-2 rounded-2xl overflow-hidden"
+              className="lg:col-span-2 rounded-2xl overflow-hidden relative"
               style={{
-                height: 460,
-                border: '1px solid var(--border-default)',
-                boxShadow: 'var(--shadow-md)',
+                height: 520,
+                border: '1px solid rgba(6,182,212,0.2)',
+                boxShadow: '0 0 40px rgba(6,182,212,0.08), 0 8px 32px rgba(0,0,0,0.5)',
+                background: '#050a14',
               }}
             >
-              <MapContainer center={[25, 50]} zoom={3} scrollWheelZoom={false} className="w-full h-full">
-                <TileLayer
-                  attribution='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
-                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-                  maxZoom={16}
-                />
-                <Marker position={[geo.lat, geo.lng]} icon={bankIcon}>
-                  <Popup>
-                    <div style={{ fontFamily:'monospace', fontSize:11 }}>
-                      <strong>Financial Destination</strong><br />
-                      {geo.bank_name} · {geo.ifsc_code}<br />
-                      {geo.branch_city}, India
-                    </div>
-                  </Popup>
-                </Marker>
-                <Marker position={[geo.ip_lat, geo.ip_lng]} icon={ipIcon}>
-                  <Popup>
-                    <div style={{ fontFamily:'monospace', fontSize:11 }}>
-                      <strong>Technical Origin IP</strong><br />
-                      {geo.ip_geolocation}<br />
-                      {geo.ip_lat.toFixed(4)}, {geo.ip_lng.toFixed(4)}
-                    </div>
-                  </Popup>
-                </Marker>
-                {/* Animated beam from sender (red/IP) → receiver (green/bank) */}
-                <BeamOverlay
-                  from={[geo.ip_lat, geo.ip_lng]}
-                  to={[geo.lat, geo.lng]}
-                />
-              </MapContainer>
+              <HolographicGlobe
+                points={points}
+                arcs={arcs}
+                focusLat={focusLat}
+                focusLng={focusLng}
+              />
+
+              {/* Floating legend */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: 16,
+                  background: 'rgba(5,10,20,0.85)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(6,182,212,0.2)',
+                  borderRadius: 12,
+                  padding: '10px 16px',
+                  display: 'flex',
+                  gap: 16,
+                  alignItems: 'center',
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d39980', display: 'inline-block' }} />
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Bank Branch</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', boxShadow: '0 0 8px #f8717180', display: 'inline-block' }} />
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Server IP</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 16, height: 2, background: '#06b6d4', boxShadow: '0 0 6px #06b6d480', display: 'inline-block', borderRadius: 1 }} />
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Data Flow</span>
+                </div>
+              </div>
+
+              {/* Floating controls hint */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  background: 'rgba(5,10,20,0.75)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(6,182,212,0.15)',
+                  borderRadius: 8,
+                  padding: '6px 12px',
+                  zIndex: 10,
+                }}
+              >
+                <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono, monospace', color: '#334155' }}>
+                  🖱 Drag to rotate · Scroll to zoom
+                </span>
+              </div>
             </div>
 
             {/* ── Financial details (right 1/3) ── */}
