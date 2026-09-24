@@ -50,7 +50,7 @@ export const AttackGraphView: React.FC<AttackGraphViewProps> = ({ caseDetail }) 
   const initialNodes: Node[] = useMemo(() => graphData.nodes.map((n, idx) => {
     const col = idx % 3;
     const row = Math.floor(idx / 3);
-    const sev = sevBadge(n.severity);
+    const sev = sevBadge(n.severity ?? '');
     const isSelected = selectedNode?.id === n.id;
 
     return {
