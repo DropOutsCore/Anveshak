@@ -19,7 +19,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_ORIGINS
-        value: '["https://anveshak.vercel.app","http://localhost:5173"]'
+        value: '["*"]'
       - key: QDRANT_URL
         sync: false
       - key: QDRANT_API_KEY
