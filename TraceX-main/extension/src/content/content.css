@@ -1,0 +1,143 @@
+/* Anveshak Webmail Sensor — Clean Light Academic Style */
+
+.tracex-sentinel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  margin-left: 8px;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.tracex-sentinel-btn:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+.tracex-sentinel-btn svg {
+  width: 12px;
+  height: 12px;
+  color: #0D9488;
+}
+
+.tracex-sentinel-btn.analyzing {
+  border-color: #F59E0B;
+  color: #B45309;
+  background: #FFFBEB;
+  cursor: wait;
+}
+
+.tracex-sentinel-btn.analyzed-critical,
+.tracex-sentinel-btn.analyzed-high {
+  border-color: #FECACA;
+  background: #FEF2F2;
+  color: #991B1B;
+}
+
+.tracex-sentinel-btn.analyzed-safe {
+  border-color: #BBF7D0;
+  background: #F0FDF4;
+  color: #166534;
+}
+
+/* Clean Light Mode Link Tooltip */
+.tracex-link-inspector-tooltip {
+  position: fixed;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  color: #0F172A;
+  z-index: 999999;
+  max-width: 280px;
+  pointer-events: auto;
+}
+
+.tracex-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 3px;
+}
+
+.tracex-tooltip-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #64748B;
+  text-transform: uppercase;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.tracex-tooltip-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.tracex-tooltip-badge.critical {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.tracex-tooltip-badge.warning {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.tracex-tooltip-badge.safe {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+}
+
+.tracex-tooltip-domain {
+  font-weight: 600;
+  color: #0F172A;
+  word-break: break-all;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.tracex-tooltip-action {
+  margin-top: 6px;
+  display: block;
+  width: 100%;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #334155;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tracex-tooltip-action:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
