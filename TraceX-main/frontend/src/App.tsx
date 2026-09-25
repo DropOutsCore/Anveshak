@@ -55,16 +55,16 @@ const Slideshow: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-  const [showLanding,]              = useState<boolean>(false);
-  const [cases, setCases]           = useState<CaseDetail[]>([]);
+  const [showLanding,] = useState<boolean>(false);
+  const [cases, setCases] = useState<CaseDetail[]>([]);
   const [activeCase, setActiveCase] = useState<CaseDetail | null>(null);
-  const [activeTab, setActiveTab]   = useState<string>('case_desk');
+  const [activeTab, setActiveTab] = useState<string>('case_desk');
   const [currentRole, setCurrentRole] = useState<UserRole>('SOC_ANALYST');
-  const [voiceActive]               = useState<boolean>(false);
-  const [loading, setLoading]       = useState<boolean>(false);
+  const [voiceActive] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [heroDismissed, setHeroDismissed] = useState<boolean>(false);
-  const [pdfMenuOpen, setPdfMenuOpen]   = useState<boolean>(false);
-  const [pdfLoading, setPdfLoading]     = useState<boolean>(false);
+  const [pdfMenuOpen, setPdfMenuOpen] = useState<boolean>(false);
+  const [pdfLoading, setPdfLoading] = useState<boolean>(false);
   const pdfMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,15 +112,15 @@ export const App: React.FC = () => {
   useEffect(() => {
     const permissions: Record<UserRole, string[]> = {
       SOC_ANALYST: [
-        'case_desk','email_forensics','header_flight','identity_deception',
-        'social_eng','url_tracer','attack_graph','geo_financial','sandbox','impact_lab','ai_copilot',
+        'case_desk', 'email_forensics', 'header_flight', 'identity_deception',
+        'social_eng', 'url_tracer', 'attack_graph', 'geo_financial', 'sandbox', 'impact_lab', 'ai_copilot',
       ],
       INVESTIGATOR: [
-        'case_desk','email_forensics','header_flight','identity_deception',
-        'social_eng','url_tracer','attack_graph','campaign_intel','geo_financial',
-        'sandbox','evidence_vault','blockchain_proof','ai_copilot','impact_lab','risk_dashboard',
+        'case_desk', 'email_forensics', 'header_flight', 'identity_deception',
+        'social_eng', 'url_tracer', 'attack_graph', 'campaign_intel', 'geo_financial',
+        'sandbox', 'evidence_vault', 'blockchain_proof', 'ai_copilot', 'impact_lab', 'risk_dashboard',
       ],
-      EXECUTIVE: ['case_desk','campaign_intel','risk_dashboard'],
+      EXECUTIVE: ['case_desk', 'campaign_intel', 'risk_dashboard'],
     };
     if (!permissions[currentRole].includes(activeTab)) {
       setActiveTab('case_desk');
@@ -149,34 +149,34 @@ export const App: React.FC = () => {
 
   // India.gov.in official color palette
   const SAFFRON = '#FF9933';
-  const GREEN   = '#138808';
-  const BLUE    = '#0056A6';       // Primary government blue
+  const GREEN = '#138808';
+  const BLUE = '#0056A6';       // Primary government blue
   const BLUE_DARK = '#003D75';     // Hover/dark variant
-  const RED     = BLUE;            // Alias - all "RED" refs now use blue
-  const INK     = '#1f2937';
-  const GRAY    = '#6b7280';
-  const BORDER  = '#e5e7eb';
+  const RED = BLUE;            // Alias - all "RED" refs now use blue
+  const INK = '#1f2937';
+  const GRAY = '#6b7280';
+  const BORDER = '#e5e7eb';
 
   const showHeroPage = !heroDismissed;
 
   return (
-    <div style={{ 
-      height: '100vh', 
+    <div style={{
+      height: '100vh',
       width: '100vw',
-      overflow: 'hidden', 
-      fontFamily: '"Segoe UI", "Noto Sans", system-ui, sans-serif', 
-      color: INK, 
-      background: '#fff', 
-      position: 'relative' 
+      overflow: 'hidden',
+      fontFamily: '"Segoe UI", "Noto Sans", system-ui, sans-serif',
+      color: INK,
+      background: '#fff',
+      position: 'relative'
     }}>
       {showHeroPage && <Slideshow />}
 
-      <div style={{ 
-        position: 'relative', 
-        zIndex: 1, 
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
         height: '100vh',
         width: '100vw',
-        display: 'flex', 
+        display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'
       }}>
@@ -200,7 +200,7 @@ export const App: React.FC = () => {
                   filter: 'brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0,0,0,0.4))',
                 }}
               />
-              
+
               {/* Right side topbar items */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                 <span></span>
@@ -215,13 +215,13 @@ export const App: React.FC = () => {
             </div>
 
             {/* Hero content */}
-            <div style={{ 
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               justifyContent: 'center',
-              textAlign: 'center', 
+              textAlign: 'center',
               padding: '20px',
               overflow: 'auto'
             }}>
@@ -285,40 +285,14 @@ export const App: React.FC = () => {
               </button>
             </div>
 
-            {/* Quote wrap at bottom */}
-            <div style={{ 
-              padding: '0 24px 40px 24px', 
-              maxWidth: '1200px', 
-              margin: '0 auto',
-              width: '100%',
-              flexShrink: 0
-            }}>
-              <div style={{
-                background: '#fff', borderRadius: '10px', boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
-                padding: '28px 34px', display: 'flex', alignItems: 'flex-start', gap: '22px',
-              }}>
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Director&backgroundColor=e5e7eb"
-                  alt="Director"
-                  style={{ width: '78px', height: '78px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid #eee' }}
-                />
-                <div>
-                  <span style={{ color: RED, fontWeight: 800, fontSize: '20px' }}>"</span>
-                  <span style={{ fontSize: '17px', fontWeight: 600, lineHeight: 1.5, color: INK }}>
-                    India's Digital Public Infrastructure has demonstrated how technology can expand opportunity, improve governance, boost financial inclusion and deliver services for hundreds of millions of people.
-                  </span>
-                  <span style={{ color: RED, fontWeight: 800, fontSize: '20px' }}>"</span>
-                  <div style={{ width: '50px', height: '3px', background: RED, marginTop: '10px' }} />
-                </div>
-              </div>
-            </div>
+
           </>
         ) : (
           /* Main Application Views - Full Screen */
           <>
             {/* Top Navigation Bar - india.gov.in style */}
             <div style={{
-              display: 'flex', 
+              display: 'flex',
               alignItems: 'center',
               padding: '0 24px',
               background: '#1a3a6b',
@@ -426,9 +400,9 @@ export const App: React.FC = () => {
                           <Globe2 size={11} /> Select Language
                         </div>
                         {([
-                          { code: 'en' as ReportLanguage, label: 'English',  native: 'English'   },
-                          { code: 'hi' as ReportLanguage, label: 'Hindi',    native: 'हिन्दी'      },
-                          { code: 'te' as ReportLanguage, label: 'Telugu',   native: 'తెలుగు'     },
+                          { code: 'en' as ReportLanguage, label: 'English', native: 'English' },
+                          { code: 'hi' as ReportLanguage, label: 'Hindi', native: 'हिन्दी' },
+                          { code: 'te' as ReportLanguage, label: 'Telugu', native: 'తెలుగు' },
                         ]).map(lang => (
                           <button
                             key={lang.code}
@@ -470,8 +444,8 @@ export const App: React.FC = () => {
             )}
 
             {/* Content Area - Full Screen */}
-            <div style={{ 
-              flex: 1, 
+            <div style={{
+              flex: 1,
               overflow: 'auto',
               background: '#f5f7fa'
             }}>
@@ -490,28 +464,28 @@ export const App: React.FC = () => {
                   <>
                     {(currentRole === 'SOC_ANALYST' || currentRole === 'INVESTIGATOR') && (
                       <>
-                        {activeTab === 'email_forensics'    && <EmailForensics        caseDetail={activeCase} />}
-                        {activeTab === 'header_flight'      && <HeaderFlightRecorder  caseDetail={activeCase} />}
+                        {activeTab === 'email_forensics' && <EmailForensics caseDetail={activeCase} />}
+                        {activeTab === 'header_flight' && <HeaderFlightRecorder caseDetail={activeCase} />}
                         {activeTab === 'identity_deception' && <IdentityDeceptionView caseDetail={activeCase} />}
-                        {activeTab === 'social_eng'         && <SocialEngineeringView caseDetail={activeCase} />}
-                        {activeTab === 'url_tracer'         && <UrlRedirectTracer     caseDetail={activeCase} />}
-                        {activeTab === 'sandbox'            && <AttachmentSandboxView caseDetail={activeCase} />}
-                        {activeTab === 'attack_graph'       && <AttackGraphView       caseDetail={activeCase} />}
-                        {activeTab === 'geo_financial'      && <GeoFinancialMapView   caseDetail={activeCase} />}
-                        {activeTab === 'impact_lab'         && <ImpactLabView         caseDetail={activeCase} />}
-                        {activeTab === 'ai_copilot'         && <ForensicRagCopilotView caseDetail={activeCase} voiceActive={voiceActive} />}
+                        {activeTab === 'social_eng' && <SocialEngineeringView caseDetail={activeCase} />}
+                        {activeTab === 'url_tracer' && <UrlRedirectTracer caseDetail={activeCase} />}
+                        {activeTab === 'sandbox' && <AttachmentSandboxView caseDetail={activeCase} />}
+                        {activeTab === 'attack_graph' && <AttackGraphView caseDetail={activeCase} />}
+                        {activeTab === 'geo_financial' && <GeoFinancialMapView caseDetail={activeCase} />}
+                        {activeTab === 'impact_lab' && <ImpactLabView caseDetail={activeCase} />}
+                        {activeTab === 'ai_copilot' && <ForensicRagCopilotView caseDetail={activeCase} voiceActive={voiceActive} />}
                       </>
                     )}
                     {(currentRole === 'INVESTIGATOR' || currentRole === 'EXECUTIVE') && (
                       <>
                         {activeTab === 'campaign_intel' && <CampaignIntelligenceView caseDetail={activeCase} />}
-                        {activeTab === 'risk_dashboard' && <ExecutiveRiskView        caseDetail={activeCase} />}
+                        {activeTab === 'risk_dashboard' && <ExecutiveRiskView caseDetail={activeCase} />}
                       </>
                     )}
                     {currentRole === 'INVESTIGATOR' && (
                       <>
                         {activeTab === 'blockchain_proof' && <BlockchainProofView caseDetail={activeCase} />}
-                        {activeTab === 'evidence_vault'   && <EvidenceVaultView   caseDetail={activeCase} />}
+                        {activeTab === 'evidence_vault' && <EvidenceVaultView caseDetail={activeCase} />}
                       </>
                     )}
                   </>
