@@ -1,17 +1,20 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { MapPin, AlertTriangle, Building2 } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { MapPin, AlertTriangle, Building2, MousePointer2 } from 'lucide-react';
 import { CaseDetail } from '../../types';
+import * as d3 from 'd3-geo';
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Holographic 3D Globe  –  powered by globe.gl + Three.js
+   Realistic 3D Geo-Financial Globe  –  powered by globe.gl + Three.js
    ───────────────────────────────────────────────────────────────────────────── */
 
 interface GlobePoint {
+  id: string;
   lat: number;
   lng: number;
   label: string;
   color: string;
-  size: number;
+  type: string;
+  subtitle: string;
 }
 
 interface GlobeArc {
@@ -22,8 +25,7 @@ interface GlobeArc {
   color: string;
 }
 
-/* ── 3D Globe wrapper ────────────────────────────────────────────────────── */
-const HolographicGlobe: React.FC<{
+const RealisticGlobe: React.FC<{
   points: GlobePoint[];
   arcs: GlobeArc[];
   focusLat: number;
@@ -44,43 +46,63 @@ const HolographicGlobe: React.FC<{
 
       if (disposed || !containerRef.current) return;
 
-      // Clear any previous globe
+      // Clear previous instances
       containerRef.current.innerHTML = '';
 
+      // Generate graticule (lat/lng grid)
+      const graticule = d3.geoGraticule10();
+      const graticuleLines = graticule.coordinates.map((coords: any) => ({
+        coords: coords,
+      }));
+
       globe = Globe()(containerRef.current)
-        .backgroundColor('rgba(0,0,0,0)')
+        .backgroundColor('rgba(5, 10, 20, 1)')
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+        .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+        // Atmosphere styling
         .showAtmosphere(true)
-        .atmosphereColor('#06b6d4')
-        .atmosphereAltitude(0.18)
-        .globeImageUrl('')
-        .showGlobe(true)
-        .pointOfView({ lat: focusLat, lng: focusLng, altitude: 2.2 }, 0)
-        // ── Globe material: dark translucent sphere ──
-        .globeMaterial((() => {
-          const THREE = (window as any).__THREE_IMPORT__;
-          if (THREE) {
-            return new THREE.MeshPhongMaterial({
-              color: '#050a14',
-              transparent: true,
-              opacity: 0.85,
-              shininess: 25,
-            });
-          }
-          return undefined;
-        })())
-        // ── Hex polygons (country outlines) ──
-        .hexPolygonResolution(3)
-        .hexPolygonMargin(0.62)
-        .hexPolygonColor(() => 'rgba(6, 182, 212, 0.12)')
-        // ── Points (markers) ──
+        .atmosphereColor('#1e40af') // Deep blue atmosphere
+        .atmosphereAltitude(0.15)
+        
+        // Initial camera
+        .pointOfView({ lat: focusLat, lng: focusLng, altitude: 2.5 }, 0)
+        
+        // Graticules (lat/lon grid)
+        .pathsData(graticuleLines)
+        .pathPoints('coords')
+        .pathPointLat(p => p[1])
+        .pathPointLng(p => p[0])
+        .pathColor(() => 'rgba(56, 189, 248, 0.15)') // subtle blue-gray
+        .pathDashLength(0.01)
+        .pathDashGap(0.005)
+        .pathStroke(0.5)
+
+        // Data points (solid core)
         .pointsData(points)
         .pointLat('lat')
         .pointLng('lng')
         .pointColor('color')
-        .pointAltitude(0.015)
-        .pointRadius('size')
-        .pointLabel('label')
-        // ── Arcs (animated beams) ──
+        .pointAltitude(0.01)
+        .pointRadius(0.3) // Small, precise dots
+        .pointResolution(32)
+        .pointLabel((d: any) => `
+          <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 8px 12px; font-family: sans-serif; backdrop-filter: blur(4px);">
+            <div style="color: ${d.color}; font-size: 11px; font-weight: 700; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">${d.type}</div>
+            <div style="color: #f8fafc; font-size: 13px; font-weight: 500;">${d.label}</div>
+            <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">${d.subtitle}</div>
+          </div>
+        `)
+
+        // Pulsing rings around points
+        .ringsData(points)
+        .ringLat('lat')
+        .ringLng('lng')
+        .ringColor('color')
+        .ringMaxRadius(3)
+        .ringPropagationSpeed(1.5)
+        .ringRepeatPeriod(1000)
+
+        // Curved routing arc
         .arcsData(arcs)
         .arcStartLat('startLat')
         .arcStartLng('startLng')
@@ -88,40 +110,45 @@ const HolographicGlobe: React.FC<{
         .arcEndLng('endLng')
         .arcColor('color')
         .arcDashLength(0.4)
-        .arcDashGap(0.15)
-        .arcDashAnimateTime(2200)
-        .arcStroke(0.6)
-        .arcAltitudeAutoScale(0.4)
-        // ── Auto-rotate ──
+        .arcDashGap(0.2)
+        .arcDashInitialGap(() => Math.random())
+        .arcDashAnimateTime(2000)
+        .arcStroke(0.5)
+        .arcAltitudeAutoScale(0.3)
+
+        // Interaction
         .enablePointerInteraction(true);
 
-      // Load country polygons for hex grid
+      // Extract country borders from GeoJSON to overlay subtle country boundaries
       try {
         const res = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json');
         const worldData = await res.json();
-        const topojson = await import('https://cdn.jsdelivr.net/npm/topojson-client@3/+esm' as any);
+        const topojson = await import('topojson-client');
         const countries = topojson.feature(worldData, worldData.objects.countries);
+        
         if (!disposed && globe) {
-          globe.hexPolygonsData(countries.features);
+          globe.polygonsData((countries as any).features)
+            .polygonCapColor(() => 'rgba(0,0,0,0)')
+            .polygonSideColor(() => 'rgba(0,0,0,0)')
+            .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.15)'); // subtle cool blue borders
         }
-      } catch {
-        // Hex polygons are optional; globe still works without them
+      } catch (err) {
+        console.error("Failed to load country boundaries:", err);
       }
 
-      // Configure controls
+      // Configure Controls
       const controls = globe.controls();
       if (controls) {
         controls.enableZoom = true;
         controls.zoomSpeed = 0.8;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.4;
+        controls.autoRotate = false; // User controls rotation entirely
         controls.enableDamping = true;
-        controls.dampingFactor = 0.1;
+        controls.dampingFactor = 0.05;
         controls.minDistance = 120;
-        controls.maxDistance = 600;
+        controls.maxDistance = 400; // Prevent zooming out too far
       }
 
-      // Size globe to container
+      // Responsive resizing
       const resize = () => {
         if (containerRef.current && globe) {
           globe.width(containerRef.current.clientWidth);
@@ -131,47 +158,30 @@ const HolographicGlobe: React.FC<{
       resize();
       window.addEventListener('resize', resize);
 
-      // Modify the renderer for glow
-      const renderer = globe.renderer();
-      if (renderer) {
-        renderer.setClearColor(0x000000, 0);
-      }
-
-      // Add ambient + directional lights for holographic feel
+      // Enhance lighting
       const scene = globe.scene();
       if (scene) {
-        const THREE_LIB = await import('three');
-        // Dim ambient
-        const ambient = new THREE_LIB.AmbientLight(0x06b6d4, 0.3);
+        const THREE = await import('three');
+        
+        // Brighter ambient light to reveal Earth texture
+        const ambient = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambient);
-        // Directional from upper-right
-        const dir = new THREE_LIB.DirectionalLight(0x06b6d4, 0.5);
-        dir.position.set(5, 3, 5);
-        scene.add(dir);
-        // Subtle point light for neon glow
-        const point = new THREE_LIB.PointLight(0xa855f7, 0.4, 500);
-        point.position.set(-3, 2, 4);
-        scene.add(point);
-
-        // Make globe material more holographic
-        const globeMesh = scene.children.find((c: any) => c.type === 'Mesh' && c.geometry?.type === 'SphereGeometry');
-        if (globeMesh && (globeMesh as any).material) {
-          (globeMesh as any).material.color.setHex(0x050a14);
-          (globeMesh as any).material.transparent = true;
-          (globeMesh as any).material.opacity = 0.88;
-          (globeMesh as any).material.emissive = new THREE_LIB.Color(0x06b6d4);
-          (globeMesh as any).material.emissiveIntensity = 0.03;
-        }
+        
+        // Directional light for shadows/depth
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 3, 5);
+        scene.add(dirLight);
       }
 
       globeRef.current = globe;
 
-      // Smooth fly-in
+      // Smooth camera pan to target on load
       setTimeout(() => {
         if (!disposed && globe) {
-          globe.pointOfView({ lat: focusLat, lng: focusLng, altitude: 1.8 }, 1500);
+          // Adjust altitude based on distance between points
+          globe.pointOfView({ lat: focusLat, lng: focusLng, altitude: 1.6 }, 2000);
         }
-      }, 500);
+      }, 300);
 
       return () => {
         window.removeEventListener('resize', resize);
@@ -196,9 +206,7 @@ const HolographicGlobe: React.FC<{
       style={{
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.04) 0%, rgba(5,10,20,0.98) 70%)',
-        borderRadius: 16,
-        overflow: 'hidden',
+        background: '#050a14',
         cursor: 'grab',
       }}
     />
@@ -212,8 +220,24 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
   const geo = caseDetail.geo_financial;
 
   const points: GlobePoint[] = geo ? [
-    { lat: geo.lat, lng: geo.lng, label: `🏦 ${geo.bank_name} · ${geo.branch_name}`, color: '#34d399', size: 0.55 },
-    { lat: geo.ip_lat, lng: geo.ip_lng, label: `🔴 Server IP · ${geo.ip_geolocation}`, color: '#f87171', size: 0.55 },
+    { 
+      id: 'bank',
+      lat: geo.lat, 
+      lng: geo.lng, 
+      label: geo.bank_name,
+      subtitle: `${geo.ifsc_code} · ${geo.branch_name}, ${geo.branch_city}`,
+      type: 'Bank Branch',
+      color: '#10b981', // green
+    },
+    { 
+      id: 'server',
+      lat: geo.ip_lat, 
+      lng: geo.ip_lng, 
+      label: geo.ip_geolocation,
+      subtitle: `${geo.ip_lat.toFixed(4)}°, ${geo.ip_lng.toFixed(4)}°`,
+      type: 'Server / IP',
+      color: '#ef4444', // red
+    },
   ] : [];
 
   const arcs: GlobeArc[] = geo ? [
@@ -222,7 +246,7 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
       startLng: geo.ip_lng,
       endLat: geo.lat,
       endLng: geo.lng,
-      color: '#06b6d4',
+      color: '#06b6d4', // cyan
     },
   ] : [];
 
@@ -281,66 +305,70 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
               className="lg:col-span-2 rounded-2xl overflow-hidden relative"
               style={{
                 height: 520,
-                border: '1px solid rgba(6,182,212,0.2)',
-                boxShadow: '0 0 40px rgba(6,182,212,0.08), 0 8px 32px rgba(0,0,0,0.5)',
-                background: '#050a14',
+                border: '1px solid var(--border-default)',
+                boxShadow: 'var(--shadow-md)',
               }}
             >
-              <HolographicGlobe
+              <RealisticGlobe
                 points={points}
                 arcs={arcs}
                 focusLat={focusLat}
                 focusLng={focusLng}
               />
 
-              {/* Floating legend */}
+              {/* Professional Legend Overlay */}
               <div
                 style={{
                   position: 'absolute',
                   bottom: 16,
                   left: 16,
-                  background: 'rgba(5,10,20,0.85)',
+                  background: 'rgba(5, 10, 20, 0.75)',
                   backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(6,182,212,0.2)',
-                  borderRadius: 12,
-                  padding: '10px 16px',
+                  border: '1px solid rgba(56, 189, 248, 0.2)',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
                   display: 'flex',
-                  gap: 16,
-                  alignItems: 'center',
+                  flexDirection: 'column',
+                  gap: '8px',
                   zIndex: 10,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d39980', display: 'inline-block' }} />
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Bank Branch</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#f1f5f9', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Bank Branch</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', boxShadow: '0 0 8px #f8717180', display: 'inline-block' }} />
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Server IP</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444' }} />
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#f1f5f9', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Server / IP</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 16, height: 2, background: '#06b6d4', boxShadow: '0 0 6px #06b6d480', display: 'inline-block', borderRadius: 1 }} />
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748b' }}>Data Flow</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 14, height: 2, background: '#06b6d4', border: '1px dashed #000' }} />
+                  <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#94a3b8' }}>Observed Routing Relationship</span>
                 </div>
               </div>
 
-              {/* Floating controls hint */}
+              {/* User Guidance Overlay */}
               <div
                 style={{
                   position: 'absolute',
-                  top: 16,
+                  bottom: 16,
                   right: 16,
-                  background: 'rgba(5,10,20,0.75)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(6,182,212,0.15)',
-                  borderRadius: 8,
-                  padding: '6px 12px',
+                  background: 'transparent',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: '4px',
                   zIndex: 10,
+                  opacity: 0.6,
                 }}
               >
-                <span style={{ fontSize: '0.6rem', fontFamily: 'JetBrains Mono, monospace', color: '#334155' }}>
-                  🖱 Drag to rotate · Scroll to zoom
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <MousePointer2 className="w-3.5 h-3.5" style={{ color: '#cbd5e1' }} />
+                  <span style={{ fontSize: '0.65rem', color: '#cbd5e1', fontWeight: 500 }}>Drag to rotate</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: '0.65rem', color: '#cbd5e1', fontWeight: 500 }}>Scroll to zoom</span>
+                </div>
               </div>
             </div>
 
@@ -351,18 +379,6 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
                   <Building2 className="w-3.5 h-3.5" style={{ color:'var(--green)' }} />
                 </div>
                 <p className="t-heading">Extracted Details</p>
-              </div>
-
-              {/* Map legend */}
-              <div className="flex items-center gap-4 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background:'var(--green)', boxShadow:'0 0 6px var(--green)' }} />
-                  <span style={{ color:'var(--text-secondary)' }}>Bank branch</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background:'var(--red)', boxShadow:'0 0 6px var(--red)' }} />
-                  <span style={{ color:'var(--text-secondary)' }}>Server IP</span>
-                </div>
               </div>
 
               {[
