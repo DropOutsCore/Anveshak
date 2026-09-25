@@ -55,7 +55,7 @@ const RealisticGlobe: React.FC<{
         coords: coords,
       }));
 
-      globe = Globe()(containerRef.current)
+      globe = (Globe as any)()(containerRef.current)
         .backgroundColor('rgba(5, 10, 20, 1)')
         .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
         .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
@@ -70,8 +70,8 @@ const RealisticGlobe: React.FC<{
         // Graticules (lat/lon grid)
         .pathsData(graticuleLines)
         .pathPoints('coords')
-        .pathPointLat(p => p[1])
-        .pathPointLng(p => p[0])
+        .pathPointLat((p: any) => p[1])
+        .pathPointLng((p: any) => p[0])
         .pathColor(() => 'rgba(56, 189, 248, 0.15)') // subtle blue-gray
         .pathDashLength(0.01)
         .pathDashGap(0.005)
@@ -224,7 +224,7 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
       id: 'bank',
       lat: geo.lat, 
       lng: geo.lng, 
-      label: geo.bank_name,
+      label: geo.bank_name || 'Unknown',
       subtitle: `${geo.ifsc_code} · ${geo.branch_name}, ${geo.branch_city}`,
       type: 'Bank Branch',
       color: '#10b981', // green
@@ -233,7 +233,7 @@ export const GeoFinancialMapView: React.FC<GeoFinancialMapViewProps> = ({ caseDe
       id: 'server',
       lat: geo.ip_lat, 
       lng: geo.ip_lng, 
-      label: geo.ip_geolocation,
+      label: geo.ip_geolocation || 'Unknown',
       subtitle: `${geo.ip_lat.toFixed(4)}°, ${geo.ip_lng.toFixed(4)}°`,
       type: 'Server / IP',
       color: '#ef4444', // red
